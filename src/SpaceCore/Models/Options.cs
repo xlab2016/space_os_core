@@ -1,0 +1,168 @@
+using System;
+using System.Collections.Generic;
+
+namespace SpaceCore.Models;
+
+/// <summary>
+/// Options for entropy generation.
+/// </summary>
+/// <param name="ChunkSize">Size of each noise chunk in bytes.</param>
+/// <param name="UseSeed">Whether to use a deterministic seed.</param>
+/// <param name="Seed">The seed to use (if UseSeed is true).</param>
+public record EntropyOptions(
+    int ChunkSize = 512,
+    bool UseSeed = false,
+    byte[]? Seed = null);
+
+/// <summary>
+/// Options for clustering.
+/// </summary>
+/// <param name="Algorithm">Clustering algorithm to use.</param>
+/// <param name="K">Number of clusters for k-means.</param>
+/// <param name="WindowSize">Window size for streaming clustering.</param>
+public record ClusterOptions(
+    string Algorithm = "online-kmeans",
+    int K = 64,
+    int WindowSize = 10);
+
+/// <summary>
+/// Options for projection.
+/// </summary>
+/// <param name="Creativity">Level of creativity (0.0 to 1.0).</param>
+/// <param name="Determinism">Level of determinism (0.0 to 1.0).</param>
+/// <param name="Safety">Safety level (0.0 to 1.0).</param>
+/// <param name="Candidates">Number of candidate projections to generate.</param>
+public record ProjectionOptions(
+    double Creativity = 0.5,
+    double Determinism = 0.9,
+    double Safety = 1.0,
+    int Candidates = 3);
+
+/// <summary>
+/// Options for dimension reduction.
+/// </summary>
+/// <param name="Method">Reduction method: "pca", "ae", "umap".</param>
+/// <param name="PreserveVariance">Target variance to preserve (for PCA).</param>
+public record DownerOptions(
+    string Method = "pca",
+    double PreserveVariance = 0.95);
+
+/// <summary>
+/// Options for edge linking.
+/// </summary>
+/// <param name="SimilarityThreshold">Minimum cosine similarity for semantic edges.</param>
+/// <param name="TemporalWindow">Window size for temporal adjacency.</param>
+/// <param name="MaxEdgesPerPoint">Maximum edges per point.</param>
+public record LinkOptions(
+    double SimilarityThreshold = 0.85,
+    int TemporalWindow = 5,
+    int MaxEdgesPerPoint = 10);
+
+/// <summary>
+/// Options for emergent processing.
+/// </summary>
+/// <param name="Steps">Number of processing steps.</param>
+/// <param name="ActivationThreshold">Threshold for activation propagation.</param>
+/// <param name="DecayFactor">Decay factor per step.</param>
+public record ProcessorOptions(
+    int Steps = 3,
+    double ActivationThreshold = 0.5,
+    double DecayFactor = 0.9);
+
+/// <summary>
+/// Options for state shaping.
+/// </summary>
+/// <param name="UseNarrativeGeneration">Whether to generate narratives using LLM.</param>
+/// <param name="ValenceWeight">Weight for valence calculation.</param>
+/// <param name="ArousalWeight">Weight for arousal calculation.</param>
+public record ShaperOptions(
+    bool UseNarrativeGeneration = true,
+    double ValenceWeight = 0.5,
+    double ArousalWeight = 0.3);
+
+/// <summary>
+/// Options for semantic processing.
+/// </summary>
+/// <param name="TopK">Number of top memory hits to retrieve.</param>
+/// <param name="RecencyWeight">Weight for recency in ranking.</param>
+/// <param name="RelevanceWeight">Weight for relevance in ranking.</param>
+public record SemanticOptions(
+    int TopK = 5,
+    double RecencyWeight = 0.3,
+    double RelevanceWeight = 0.7);
+
+/// <summary>
+/// Options for solver.
+/// </summary>
+/// <param name="MaxIterations">Maximum solver iterations.</param>
+/// <param name="ExplorationRate">Exploration vs exploitation rate.</param>
+public record SolverOptions(
+    int MaxIterations = 100,
+    double ExplorationRate = 0.1);
+
+/// <summary>
+/// Options for impulser pulsing.
+/// </summary>
+/// <param name="Amplitude">Amplitude of the pulse.</param>
+/// <param name="Frequency">Frequency of the pulse.</param>
+/// <param name="Waveform">Waveform type: "sine", "exponential", "sawtooth".</param>
+public record PulseOptions(
+    double Amplitude = 0.1,
+    double Frequency = 1.0,
+    string Waveform = "sine");
+
+/// <summary>
+/// Context for problem solving.
+/// </summary>
+/// <param name="SessionId">Session identifier.</param>
+/// <param name="Goal">The goal to achieve.</param>
+/// <param name="Constraints">List of constraints.</param>
+/// <param name="Context">Additional context information.</param>
+public record ProblemContext(
+    Guid SessionId,
+    string Goal,
+    IList<string>? Constraints = null,
+    IDictionary<string, object>? Context = null);
+
+/// <summary>
+/// Represents a solution from the solver.
+/// </summary>
+/// <param name="Id">Solution identifier.</param>
+/// <param name="Action">The proposed action.</param>
+/// <param name="Confidence">Confidence in this solution.</param>
+/// <param name="Reasoning">Explanation of the solution.</param>
+/// <param name="RelatedStateIds">States that contributed to this solution.</param>
+public record Solution(
+    Guid Id,
+    string Action,
+    double Confidence,
+    string Reasoning,
+    IList<Guid> RelatedStateIds);
+
+/// <summary>
+/// Represents a thought generated by semantic processing.
+/// </summary>
+/// <param name="Id">Thought identifier.</param>
+/// <param name="Content">The thought content.</param>
+/// <param name="Relevance">Relevance score.</param>
+/// <param name="SourceStateId">The state that triggered this thought.</param>
+/// <param name="MemoryHits">Related memory references.</param>
+public record Thought(
+    Guid Id,
+    string Content,
+    double Relevance,
+    Guid SourceStateId,
+    IList<string>? MemoryHits = null);
+
+/// <summary>
+/// Context for an agent session.
+/// </summary>
+/// <param name="SessionId">Session identifier.</param>
+/// <param name="UserId">User identifier.</param>
+/// <param name="Tags">Active tags.</param>
+/// <param name="Meta">Additional metadata.</param>
+public record AgentContext(
+    Guid SessionId,
+    string? UserId = null,
+    IList<string>? Tags = null,
+    IDictionary<string, object>? Meta = null);
