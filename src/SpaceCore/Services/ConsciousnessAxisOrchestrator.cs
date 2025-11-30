@@ -15,6 +15,7 @@ namespace SpaceCore.Services;
 /// <summary>
 /// Orchestrates the entire consciousness flow pipeline.
 /// Coordinates all components from entropy generation to action execution.
+/// Now includes consciousness state memorization across pipeline stages.
 /// </summary>
 public class ConsciousnessAxisOrchestrator : IConsciousnessAxisOrchestrator
 {
@@ -29,6 +30,8 @@ public class ConsciousnessAxisOrchestrator : IConsciousnessAxisOrchestrator
     private readonly IStateSolver _stateSolver;
     private readonly IReflectionImpulser _reflectionImpulser;
     private readonly ISpiritModel _spiritModel;
+    private readonly IConsciousnessStateRepository _stateRepository;
+    private readonly IConsciousnessStateMerger _stateMerger;
 
     private readonly ConcurrentDictionary<Guid, SessionState> _sessions = new();
     private readonly ConcurrentDictionary<Guid, CancellationTokenSource> _flowCancellations = new();
@@ -36,6 +39,10 @@ public class ConsciousnessAxisOrchestrator : IConsciousnessAxisOrchestrator
     // Default dimensions for pipeline
     private const int InitialDimension = 128;
     private const int FinalDimension = 32;
+
+    // Prune consciousness state every N processing cycles
+    private const int PruneCycleInterval = 10;
+    private int _processingCycleCount = 0;
 
     public ConsciousnessAxisOrchestrator(
         IEntropyGenerator entropyGenerator,
@@ -48,7 +55,9 @@ public class ConsciousnessAxisOrchestrator : IConsciousnessAxisOrchestrator
         ISemanticProcessor semanticProcessor,
         IStateSolver stateSolver,
         IReflectionImpulser reflectionImpulser,
-        ISpiritModel spiritModel)
+        ISpiritModel spiritModel,
+        IConsciousnessStateRepository stateRepository,
+        IConsciousnessStateMerger stateMerger)
     {
         _entropyGenerator = entropyGenerator;
         _crossDimensionProjector = crossDimensionProjector;
@@ -61,6 +70,8 @@ public class ConsciousnessAxisOrchestrator : IConsciousnessAxisOrchestrator
         _stateSolver = stateSolver;
         _reflectionImpulser = reflectionImpulser;
         _spiritModel = spiritModel;
+        _stateRepository = stateRepository;
+        _stateMerger = stateMerger;
     }
 
     /// <inheritdoc />
@@ -80,7 +91,11 @@ public class ConsciousnessAxisOrchestrator : IConsciousnessAxisOrchestrator
             ContextState = ContextState.Empty(context.SessionId, InitialDimension)
         });
 
-        // Step 1: Generate noise
+        // Get or load consciousness state for this session
+        var consciousnessState = await _stateRepository.GetAsync(context.SessionId, ct)
+            ?? ConsciousnessState.Empty(context.SessionId);
+
+        // Step 1: Generate noise (entropy source)
         var entropyOptions = new EntropyOptions(
             ChunkSize: 512,
             UseSeed: false
@@ -133,6 +148,49 @@ public class ConsciousnessAxisOrchestrator : IConsciousnessAxisOrchestrator
                 validatedStates.Add(state);
             }
         }
+
+        // === CONSCIOUSNESS STATE MEMORIZATION ===
+        // After GenerateChunks, merge pipeline results into consciousness state
+        // based on I-point position (entropy vs determinism influence)
+        if (!consciousnessState.IsInitialized)
+        {
+            // Initialize consciousness state from entropy (first run)
+            consciousnessState = await _stateMerger.InitializeFromEntropyAsync(
+                consciousnessState,
+                clusters,
+                highDimPoints,
+                lowDimPoints,
+                edges,
+                shapes,
+                validatedStates.ToArray(),
+                ct);
+        }
+        else
+        {
+            // Merge new results into existing state based on I-point position
+            // Right (entropic): stronger entropy impact
+            // Left (deterministic): weaker entropy but stronger Thought preservation
+            consciousnessState = await _stateMerger.MergeAsync(
+                consciousnessState,
+                session.IPointState.AxisPosition,
+                clusters,
+                highDimPoints,
+                lowDimPoints,
+                edges,
+                shapes,
+                validatedStates.ToArray(),
+                ct);
+        }
+
+        // Periodically prune low-weight items
+        Interlocked.Increment(ref _processingCycleCount);
+        if (_processingCycleCount % PruneCycleInterval == 0)
+        {
+            consciousnessState = await _stateMerger.PruneAsync(consciousnessState, ct);
+        }
+
+        // Persist consciousness state to file (consciousness_state.json)
+        await _stateRepository.SaveAsync(consciousnessState, ct);
 
         // Step 9: Generate thoughts via semantic processor
         var semanticOptions = new SemanticOptions(TopK: 5);
@@ -207,10 +265,21 @@ public class ConsciousnessAxisOrchestrator : IConsciousnessAxisOrchestrator
         var flowCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
         _flowCancellations[sessionId] = flowCts;
 
-        // Initialize session
+        // Load consciousness state from storage if it exists (server restart recovery)
+        await _stateRepository.LoadFromStorageAsync(ct);
+        var existingConsciousnessState = await _stateRepository.GetAsync(sessionId, ct);
+
+        // Initialize session, restoring I-point position from consciousness state if available
+        var initialIPointState = _reflectionImpulser.Reset(sessionId);
+        if (existingConsciousnessState?.IsInitialized == true)
+        {
+            // Restore I-point position from last known state
+            initialIPointState = initialIPointState.WithNewPosition(existingConsciousnessState.LastIPointPosition);
+        }
+
         _sessions[sessionId] = new SessionState
         {
-            IPointState = _reflectionImpulser.Reset(sessionId),
+            IPointState = initialIPointState,
             ContextState = ContextState.Empty(sessionId, InitialDimension)
         };
 
