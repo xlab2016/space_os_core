@@ -144,6 +144,8 @@ public class IntegrationTests
         Assert.NotNull(_services.GetRequiredService<IStateSolver>());
         Assert.NotNull(_services.GetRequiredService<IReflectionImpulser>());
         Assert.NotNull(_services.GetRequiredService<ISpiritModel>());
+        Assert.NotNull(_services.GetRequiredService<IConsciousnessStateRepository>());
+        Assert.NotNull(_services.GetRequiredService<IConsciousnessStateMerger>());
         Assert.NotNull(_services.GetRequiredService<IConsciousnessAxisOrchestrator>());
     }
 }

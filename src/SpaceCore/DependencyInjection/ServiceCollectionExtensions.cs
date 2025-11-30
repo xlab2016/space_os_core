@@ -27,6 +27,10 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IReflectionImpulser, ReflectionImpulser>();
         services.AddSingleton<ISpiritModel, SpiritModel>();
 
+        // Register consciousness state persistence services
+        services.AddSingleton<IConsciousnessStateRepository, ConsciousnessStateRepository>();
+        services.AddSingleton<IConsciousnessStateMerger, ConsciousnessStateMerger>();
+
         // Register orchestrator as singleton
         services.AddSingleton<IConsciousnessAxisOrchestrator, ConsciousnessAxisOrchestrator>();
 
@@ -53,6 +57,10 @@ public static class ServiceCollectionExtensions
 
         // Register custom Spirit model
         services.AddSingleton<ISpiritModel, TSpirit>();
+
+        // Register consciousness state persistence services
+        services.AddSingleton<IConsciousnessStateRepository, ConsciousnessStateRepository>();
+        services.AddSingleton<IConsciousnessStateMerger, ConsciousnessStateMerger>();
 
         // Register orchestrator
         services.AddSingleton<IConsciousnessAxisOrchestrator, ConsciousnessAxisOrchestrator>();
