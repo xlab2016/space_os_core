@@ -7,11 +7,20 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Services\GraphQL\**" />
+    <Content Remove="Services\GraphQL\**" />
+    <EmbeddedResource Remove="Services\GraphQL\**" />
+    <None Remove="Services\GraphQL\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.21" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Libs\Api.AspNetCore\Api.AspNetCore.csproj" />
+    <ProjectReference Include="..\Libs\Data.Repository\Data.Repository.csproj" />
     <ProjectReference Include="..\SpaceCore\SpaceCore.csproj" />
   </ItemGroup>
 

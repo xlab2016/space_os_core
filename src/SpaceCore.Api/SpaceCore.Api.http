@@ -1,6 +1,9 @@
-@SpaceCore.Api_HostAddress = http://localhost:5154
+@host = http://localhost:5154
 
-GET {{SpaceCore.Api_HostAddress}}/weatherforecast/
+POST {{host}}/api/spacecore/percepts
 Accept: application/json
+Content-Type: application/json
 
-###
+{
+    "Content": "ok1"
+}
